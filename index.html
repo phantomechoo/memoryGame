@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bubbler+One&display=swap" rel="stylesheet">
+
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: #FFEDFA;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 1rem;
+        font-family: "Bubbler One", sans-serif;
+    }
+
+    .container {
+        background-color: white;
+        width: 100%;
+        max-width: 600px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        border-radius: 1rem;
+    }
+
+    #startScreen .resim {
+        margin: 0 auto;
+    }
+
+    #startScreen h1 {
+        color: #FFB8E0;
+        font-size: 35px;
+        margin-bottom: 30px;
+    }
+
+    #startScreen p {
+        font-size: 20px;
+        margin-bottom: 30px;
+    }
+
+    button {
+        background-color: #FFEDFA;
+        padding: 10px 25px;
+        border: none;
+        border-radius: 10px;
+        font-family: "Bubbler One", sans-serif;
+        font-size: 20px;
+        transition: all 0.3s ease;
+    }
+
+    button:hover {
+        background-color: #FFB8E0;
+    }
+
+    #info {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+        margin-top: 10px;
+        font-size: 19px;
+    }
+
+    #gameScreen h1 {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 30px;
+        color: #FFB8E0;
+    }
+
+    #cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        justify-content: center;
+        margin-top: 10px;
+        padding: 10px;
+    }
+
+    .card {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        aspect-ratio: 1/1;
+        font-size: clamp(1.5rem, 4vw, 2.5rem);
+        width: 100%;
+        background-color: #FFEDFA;
+        cursor: pointer;
+        border-radius: 10px;
+        border: 2px solid #ffdaef;
+        box-shadow: 0 5px 10px #FFEDFA;
+        transition: background-color 0.3s ease; 
+    }
+
+
+    .card:hover {
+        background-color: #FFB8E0;
+    }
+
+    .screen {
+        display: none;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .screen.active {
+        display: block;
+    }
+
+    .result-info {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        background-color: #FFEDFA;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        font-size: 20px;
+    }
+
+    #resultScreen {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px; 
+    }
+
+    #resultScreen h1 {
+        color: #FFB8E0;
+        margin-bottom: 20px;
+    }
+
+        /* Kart çevrildiğinde (geçici) */
+    .card.flipped {
+        background-color: #ffdaef;
+    }
+
+    /* Kart eşleştiğinde (kalıcı) */
+    .card.matched {
+        cursor: default;
+        background-color: #FFB8E0 !important;
+        opacity: 0.9;
+        /* Tıklanmayı engelle */
+        pointer-events: none;
+    }
+
+    .card:not(.matched):not(.flipped):hover {
+        background-color: #FFB8E0;
+    }
+
+    @media (max-width: 600px) {
+        #cards {
+            gap: 10px;
+        }
+        .card {
+           font-size: 1.8rem;
+        }
+    }
+
+
+</style>
+<body>
+    <div class="container">
+        <div class="screen active" id="startScreen">
+            <dotlottie-wc src="https://lottie.host/aea18115-5fa0-48f7-9868-12beda28e5ab/8G1tbAarXu.lottie" style="width: 250px;height: 250px" autoplay loop class="resim"></dotlottie-wc>
+            <h1>Welcome to Memory Game!</h1>
+            <p>Match and Win! Test your memory. Start now!</p>
+            <button id="myBtn">Start</button>
+        </div>
+
+        <div class="screen" id="gameScreen">
+            <h1>Find the same cards!</h1>
+
+            <div id="info">
+                <p>Time: <span id="time">0</span></p>
+            </div>
+
+            <div id="cards">
+                <div class="card" data-value="🥑"></div>
+                <div class="card" data-value="🍔"></div>
+                <div class="card" data-value="🥑"></div>
+                <div class="card" data-value="🍔"></div>
+                <div class="card" data-value="🍫"></div>
+                <div class="card" data-value="🍌"></div>
+                <div class="card" data-value="🍉"></div>
+                <div class="card" data-value="🍫"></div>
+                <div class="card" data-value="🍌"></div>
+                <div class="card" data-value="🍉"></div>
+                <div class="card" data-value="🍄"></div>
+                <div class="card" data-value="🍄"></div>
+            </div> 
+        </div>
+
+        <div class="screen" id="resultScreen">
+            <h1>Game Results</h1>
+
+            <div class="result-info">
+                <p>Your time: <span id="finalTime">0</span></p>
+                <p>Your trials: <span id="finalTrials">0</span></p>   
+            </div>
+             
+            <button id="restartBtn">Restart</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.1/dist/dotlottie-wc.js" type="module"></script>
+
+    <script>
+        const startScreen = document.getElementById("startScreen");
+        const gameScreen = document.getElementById("gameScreen");
+        const resultScreen = document.getElementById("resultScreen");
+        const myBtn = document.getElementById("myBtn");
+        const timeSpan = document.getElementById("time");
+        const cardsContainer = document.getElementById("cards"); 
+        const finalTime = document.getElementById("finalTime");
+        const finalTrials = document.getElementById("finalTrials");
+        const denemeSpan = document.getElementById("deneme");
+        const restartBtn = document.getElementById("restartBtn");
+
+        const correctSound = new Audio("correct.mp3");
+        
+        let firstCard = null;
+        let secondCard = null;
+        let isFlipping = false;
+        let matchedCount = 0;
+        let trials = 0;
+        let timer;
+        let time = 0;
+
+        // 🕹️ Başlangıç butonu
+        myBtn.addEventListener("click", startGame);
+        restartBtn.addEventListener("click", restartGame);
+
+        // 🎯 Oyunu başlat
+        function startGame() {
+            startScreen.classList.remove("active");
+            gameScreen.classList.add("active");
+
+            matchedCount = 0;
+            trials = 0;
+            time = 0;
+            timeSpan.textContent = 0;
+            shuffleCards();
+            startTimer();
+        }
+
+        // ⏱️ Zamanlayıcı
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                time++;
+                timeSpan.textContent = time;
+            }, 1000);
+        }
+
+        // 🔀 Kartları karıştır
+        function shuffleCards() {
+            const cards = Array.from(cardsContainer.children);
+            cards.forEach(card => {
+                card.textContent = "";
+                card.classList.remove("flipped", "matched");
+            });
+
+            // Karıştır
+            cards.sort(() => Math.random() - 0.5);
+            cards.forEach(card => cardsContainer.appendChild(card));
+
+            cards.forEach(card => card.addEventListener("click", flipCard));
+        }
+
+        // 🃏 Kartı çevir
+        function flipCard(event) {
+            const clickedCard = event.currentTarget;
+
+            if (isFlipping || clickedCard === firstCard || clickedCard.classList.contains("matched")) return;
+
+            clickedCard.classList.add("flipped");
+            clickedCard.textContent = clickedCard.dataset.value;
+
+            if (!firstCard) {
+                firstCard = clickedCard;
+                return;
+            }
+
+            secondCard = clickedCard;
+            isFlipping = true;
+            trials++;
+
+            setTimeout(checkForMatch, 700);
+        }
+
+        // ✅ Eşleşme kontrolü
+        function checkForMatch() {
+            if (firstCard.dataset.value === secondCard.dataset.value) {
+                correctSound.play();
+                firstCard.classList.add("matched");
+                secondCard.classList.add("matched");
+                matchedCount++;
+                resetCards();
+
+                if (matchedCount === cardsContainer.children.length / 2) {
+                    endGame();
+                }
+            } else {
+                unflipCards();
+            }
+        }
+
+        // 🔄 Eşleşmeyenleri çevir
+        function unflipCards() {
+            setTimeout(() => {
+                firstCard.classList.remove("flipped");
+                secondCard.classList.remove("flipped");
+                firstCard.textContent = "";
+                secondCard.textContent = "";
+                resetCards();
+            }, 600);
+        }
+
+        // ♻️ Kart seçimi sıfırla
+        function resetCards() {
+            firstCard = null;
+            secondCard = null;
+            isFlipping = false;
+        }
+
+        // 🏁 Oyunu bitir
+        function endGame() {
+            clearInterval(timer);
+            gameScreen.classList.remove("active");
+            resultScreen.classList.add("active");
+            finalTime.textContent = time + " sn";
+            finalTrials.textContent = trials;
+        }
+
+        // 🔁 Yeniden başlat
+        function restartGame() {
+            resultScreen.classList.remove("active");
+            startScreen.classList.add("active");
+        }
+    </script>
+</body>
+</html>
